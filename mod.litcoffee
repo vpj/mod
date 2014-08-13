@@ -81,5 +81,5 @@ If **browser**
 
      console.log "Initialized"
      for cb in loaded
-      cb.call _self
+      cb()
 
