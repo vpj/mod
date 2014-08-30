@@ -32,10 +32,17 @@ If **browser**
 
 ##Require modules
 
-    Mod.require = (list, callback) ->
-     map = {}
-     for k in list
-      map[k] = true
+    Mod.require = () ->
+     if arguments.length < 1
+      throw new Error 'Mod.require needs at least on argument'
+     else if arguments.length is 2 and Array.isArray arguments[0]
+      list = arguments[0]
+      callback = arguments[1]
+     else
+      callback = arguments[arguments.length - 1]
+      list = []
+      for i in [0...arguments.length - 1]
+       list.push arguments[i]
 
      callbacks.push
       callback: callback
