@@ -44,6 +44,12 @@ If **browser**
       for i in [0...arguments.length - 1]
        list.push arguments[i]
 
+     if (typeof callback) isnt 'function'
+      throw new Error 'Last argument of Mod.require should be a function'
+     for l in list
+      if (typeof l) isnt 'string'
+       throw new Error 'Required namespaces should be strings'
+
      callbacks.push
       callback: callback
       list: list
@@ -76,15 +82,15 @@ If **browser**
       if n isnt 0 and nC is 0
        todo = {}
        s = "Cyclic dependancy: "
-       for cb in callbacks
-        for name in cb.list
+       for cb in callbacks when cb.called is false
+        for name in cb.list when not modules[name]?
          todo[name] = true
 
        first = ""
        for name of todo
         s += "#{first}#{name}"
         first = ", "
-       throw s
+       throw new Error s
 
      console.log "Initialized"
      for cb in loaded
