@@ -32,7 +32,7 @@ If **browser**
 
 ##Require modules
 
-    Mod.require = () ->
+    Mod.require = ->
      if arguments.length < 1
       throw new Error 'Mod.require needs at least on argument'
      else if arguments.length is 2 and Array.isArray arguments[0]
