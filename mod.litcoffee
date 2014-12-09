@@ -92,7 +92,6 @@ If **browser**
         first = ", "
        throw new Error s
 
-     console.log "Initialized"
      for cb in loaded
       cb()
 
