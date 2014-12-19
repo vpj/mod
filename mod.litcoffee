@@ -16,6 +16,9 @@ If **browser**
     modules = {}
     callbacks = []
     loaded = []
+    initializeCalled = false
+    everythingLoaded = false
+    running = false
 
 ##Register a module
 
@@ -24,6 +27,20 @@ If **browser**
       throw new Error "Module #{name} already registered"
 
      modules[name] = module
+
+     if initializeCalled and not running
+      try
+       running = true
+       run()
+      catch e
+       running = false
+       console.log 'Set', name
+       console.error e.message
+
+     if everythingLoaded
+      console.log 'All dependencies are met'
+      for cb in loaded
+       cb()
 
 ##Register callbacks to run after everything loads
 
@@ -57,7 +74,10 @@ If **browser**
 
 ##Initialize modules
 
-    Mod.initialize = ->
+
+    run = ->
+     everythingLoaded = false
+
      while true
       n = 0
       nC = 0
@@ -79,6 +99,7 @@ If **browser**
         nC++
 
       break if n is 0
+
       if n isnt 0 and nC is 0
        todo = {}
        s = "Cyclic dependancy: "
@@ -92,6 +113,21 @@ If **browser**
         first = ", "
        throw new Error s
 
-     for cb in loaded
-      cb()
+     everythingLoaded = true
+
+    Mod.initialize = ->
+     console.log 'init'
+     initializeCalled = true
+
+     try
+      running = true
+      run()
+     catch e
+      console.error e.message
+
+     running = false
+     if everythingLoaded
+      console.log 'All dependencies are met'
+      for cb in loaded
+       cb()
 
