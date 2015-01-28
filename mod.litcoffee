@@ -20,11 +20,16 @@ If **browser**
     everythingLoaded = false
     running = false
 
+    class ModError extends Error
+     constructor: (message) ->
+      super message
+      @message = message
+
 ##Register a module
 
     Mod.set = (name, module) ->
      if modules[name]?
-      throw new Error "Module #{name} already registered"
+      throw new ModError "Module #{name} already registered"
 
      modules[name] = module
 
@@ -35,7 +40,10 @@ If **browser**
       catch e
        running = false
        console.log 'Set', name
-       console.error e.message
+       if e instanceof ModError
+        console.error e.message
+       else
+        throw e
 
      if everythingLoaded
       console.log 'All dependencies are met'
@@ -51,7 +59,7 @@ If **browser**
 
     Mod.require = ->
      if arguments.length < 1
-      throw new Error 'Mod.require needs at least on argument'
+      throw new ModError 'Mod.require needs at least on argument'
      else if arguments.length is 2 and Array.isArray arguments[0]
       list = arguments[0]
       callback = arguments[1]
@@ -62,10 +70,10 @@ If **browser**
        list.push arguments[i]
 
      if (typeof callback) isnt 'function'
-      throw new Error 'Last argument of Mod.require should be a function'
+      throw new ModError 'Last argument of Mod.require should be a function'
      for l in list
       if (typeof l) isnt 'string'
-       throw new Error 'Required namespaces should be strings'
+       throw new ModError 'Required namespaces should be strings'
 
      callbacks.push
       callback: callback
@@ -111,7 +119,7 @@ If **browser**
        for name of todo
         s += "#{first}#{name}"
         first = ", "
-       throw new Error s
+       throw new ModError s
 
      everythingLoaded = true
 
@@ -123,7 +131,10 @@ If **browser**
       running = true
       run()
      catch e
-      console.error e.message
+      if e instanceof ModError
+       console.error e.message
+      else
+       throw e
 
      running = false
      if everythingLoaded
