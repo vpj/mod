@@ -1,6 +1,16 @@
     Mod = {}
     _self = null
 
+    if console?.log?
+     LOG = console.log.bind console
+    else
+     LOG = -> null
+
+    if console?.error?
+     ERROR_LOG = console.error.bind console
+    else
+     ERROR_LOG = -> null
+
 If **node.js**
 
     if GLOBAL?
@@ -39,14 +49,14 @@ If **browser**
        run()
       catch e
        running = false
-       console.log 'Set', name
+       LOG 'Set', name
        if e instanceof ModError
-        console.error e.message
+        ERROR_LOG e.message
        else
         throw e
 
      if everythingLoaded
-      console.log 'All dependencies are met'
+      LOG 'All dependencies are met'
       for cb in loaded
        cb()
 
@@ -124,7 +134,7 @@ If **browser**
      everythingLoaded = true
 
     Mod.initialize = ->
-     console.log 'init'
+     LOG 'init'
      initializeCalled = true
 
      try
@@ -132,13 +142,13 @@ If **browser**
       run()
      catch e
       if e instanceof ModError
-       console.error e.message
+       ERROR_LOG e.message
       else
        throw e
 
      running = false
      if everythingLoaded
-      console.log 'All dependencies are met'
+      LOG 'All dependencies are met'
       for cb in loaded
        cb()
 
