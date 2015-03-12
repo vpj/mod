@@ -134,7 +134,6 @@ If **browser**
      everythingLoaded = true
 
     Mod.initialize = ->
-     LOG 'init'
      initializeCalled = true
 
      try
