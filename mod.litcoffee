@@ -6,11 +6,6 @@
     else
      LOG = -> null
 
-    if console?.error?
-     ERROR_LOG = console.error.bind console
-    else
-     ERROR_LOG = -> null
-
 If **node.js**
 
     if GLOBAL?
@@ -49,14 +44,14 @@ If **browser**
        run()
       catch e
        running = false
-       LOG 'Set', name
+       LOG "MOD: Set - #{name}"
        if e instanceof ModError
-        ERROR_LOG e.message
+        LOG "MOD: Error - #{e.message}"
        else
         throw e
 
      if everythingLoaded
-      LOG 'All dependencies are met'
+      LOG "MOD: All dependencies are met"
       for cb in loaded
        cb()
 
@@ -141,13 +136,13 @@ If **browser**
       run()
      catch e
       if e instanceof ModError
-       ERROR_LOG e.message
+       LOG "MOD: Error - #{e.message}"
       else
        throw e
 
      running = false
      if everythingLoaded
-      LOG 'All dependencies are met'
+      LOG "MOD: All dependencies are met"
       for cb in loaded
        cb()
 
