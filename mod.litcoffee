@@ -40,7 +40,7 @@ If **browser**
      return if not INITIALIZED
 
      try
-      run()
+      _run()
      catch e
       LOG "MOD: Set - #{name}"
       if e instanceof ModError
@@ -48,7 +48,7 @@ If **browser**
       else
        throw e
 
-    _onLoaded()
+     _onLoaded()
 
 ##Register callbacks to run after everything loads
 
@@ -81,6 +81,7 @@ If **browser**
       called: false
 
 ##Initialize modules
+
     _onLoaded = ->
      return if not LOADING_COMPLETED
 
@@ -88,13 +89,13 @@ If **browser**
      for cb in ON_LOADED
       cb()
 
-    loadCallback = (callback, modules) ->
+    _loadCallback = (callback, modules) ->
      callback.called = true
      setTimeout ->
       callback.callback.apply SELF, modules
      , 0
 
-    run = ->
+    _run = ->
      LOADING_COMPLETED = false
 
      nUncalled = 0
@@ -111,7 +112,7 @@ If **browser**
         break
 
       if satis is true
-       loadCallback cb, list
+       _loadCallback cb, list
        nCall++
 
      if nUncalled isnt 0 and nCall is 0
@@ -134,7 +135,7 @@ If **browser**
      INITIALIZED = true
 
      try
-      run()
+      _run()
      catch e
       if e instanceof ModError
        LOG "MOD: Error - #{e.message}"
