@@ -1,5 +1,5 @@
     Mod = {}
-    _self = null
+    SELF = null
 
     if console?.log?
      LOG = console.log.bind console
@@ -10,20 +10,19 @@ If **node.js**
 
     if GLOBAL?
      GLOBAL.Mod = Mod
-     _self = GLOBAL
+     SELF = GLOBAL
 
 If **browser**
 
     else
      @Mod = Mod
-     _self = this
+     SELF = this
 
-    modules = {}
-    callbacks = []
-    loaded = []
-    initializeCalled = false
-    everythingLoaded = false
-    running = false
+    MODULES = {}
+    CALLBACKS = []
+    ON_LOADED = []
+    INITIALIZED = false
+    LOADING_COMPLETED = false
 
     class ModError extends Error
      constructor: (message) ->
@@ -33,32 +32,28 @@ If **browser**
 ##Register a module
 
     Mod.set = (name, module) ->
-     if modules[name]?
+     if MODULES[name]?
       throw new ModError "Module #{name} already registered"
 
-     modules[name] = module
+     MODULES[name] = module
 
-     if initializeCalled and not running
-      try
-       running = true
-       run()
-      catch e
-       running = false
-       LOG "MOD: Set - #{name}"
-       if e instanceof ModError
-        LOG "MOD: Error - #{e.message}"
-       else
-        throw e
+     return if not INITIALIZED
 
-     if everythingLoaded
-      LOG "MOD: All dependencies are met"
-      for cb in loaded
-       cb()
+     try
+      run()
+     catch e
+      LOG "MOD: Set - #{name}"
+      if e instanceof ModError
+       LOG "MOD: Error - #{e.message}"
+      else
+       throw e
+
+    _onLoaded()
 
 ##Register callbacks to run after everything loads
 
     Mod.onLoad = (callback) ->
-     loaded.push callback
+     ON_LOADED.push callback
 
 ##Require modules
 
@@ -80,59 +75,65 @@ If **browser**
       if (typeof l) isnt 'string'
        throw new ModError 'Required namespaces should be strings'
 
-     callbacks.push
+     CALLBACKS.push
       callback: callback
       list: list
       called: false
 
 ##Initialize modules
+    _onLoaded = ->
+     return if not LOADING_COMPLETED
 
+     LOG "MOD: All dependencies are met"
+     for cb in ON_LOADED
+      cb()
+
+    loadCallback = (callback, modules) ->
+     callback.called = true
+     setTimeout ->
+      callback.callback.apply SELF, modules
+     , 0
 
     run = ->
-     everythingLoaded = false
+     LOADING_COMPLETED = false
 
-     while true
-      n = 0
-      nC = 0
-      for cb in callbacks when cb.called is false
-       n++
-       k = parseInt k
-       list = []
-       satis = true
-       for name in cb.list
-        if modules[name]?
-         list.push modules[name]
-        else
-         satis = false
-         break
+     nUncalled = 0
+     nCall = 0
+     for cb in CALLBACKS when cb.called is false
+      nUncalled++
+      list = []
+      satis = true
+      for name in cb.list
+       if MODULES[name]?
+        list.push MODULES[name]
+       else
+        satis = false
+        break
 
-       if satis is true
-        cb.called = true
-        cb.callback.apply _self, list
-        nC++
+      if satis is true
+       loadCallback cb, list
+       nCall++
 
-      break if n is 0
+     if nUncalled isnt 0 and nCall is 0
+      todo = {}
+      s = "Cyclic dependancy: "
+      for cb in CALLBACKS when cb.called is false
+       for name in cb.list when not MODULES[name]?
+        todo[name] = true
 
-      if n isnt 0 and nC is 0
-       todo = {}
-       s = "Cyclic dependancy: "
-       for cb in callbacks when cb.called is false
-        for name in cb.list when not modules[name]?
-         todo[name] = true
+      first = ""
+      for name of todo
+       s += "#{first}#{name}"
+       first = ", "
+      throw new ModError s
 
-       first = ""
-       for name of todo
-        s += "#{first}#{name}"
-        first = ", "
-       throw new ModError s
-
-     everythingLoaded = true
+     if nUncalled is nCall
+      LOADING_COMPLETED = true
 
     Mod.initialize = ->
-     initializeCalled = true
+     INITIALIZED = true
 
      try
-      running = true
       run()
      catch e
       if e instanceof ModError
@@ -140,9 +141,5 @@ If **browser**
       else
        throw e
 
-     running = false
-     if everythingLoaded
-      LOG "MOD: All dependencies are met"
-      for cb in loaded
-       cb()
+     _onLoaded()
 
