@@ -23,6 +23,7 @@ If **browser**
     ON_LOADED = []
     INITIALIZED = false
     LOADING_COMPLETED = false
+    LOADING = 0
 
     class ModError extends Error
      constructor: (message) ->
@@ -83,7 +84,7 @@ If **browser**
 ##Initialize modules
 
     _onLoaded = ->
-     return if not LOADING_COMPLETED
+     return unless LOADING_COMPLETED and LOADING is 0
 
      LOG "MOD: All dependencies are met"
      for cb in ON_LOADED
@@ -91,8 +92,11 @@ If **browser**
 
     _loadCallback = (callback, modules) ->
      callback.called = true
+     LOADING++
      setTimeout ->
       callback.callback.apply SELF, modules
+      LOADING--
+      _onLoaded()
      , 0
 
     _run = ->
