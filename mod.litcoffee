@@ -1,5 +1,6 @@
     Mod = {}
     SELF = null
+    DEBUG = false
 
     if console?.log?
      LOG = console.log.bind console
@@ -43,9 +44,11 @@ If **browser**
      try
       _run()
      catch e
-      LOG "MOD: Set - #{name}"
+      if DEBUG
+       LOG "MOD: Set - #{name}"
       if e instanceof ModError
-       LOG "MOD: Error - #{e.message}"
+       if DEBUG
+        LOG "MOD: Error - #{e.message}"
       else
        throw e
 
@@ -86,7 +89,8 @@ If **browser**
     _onLoaded = ->
      return unless LOADING_COMPLETED and LOADING is 0
 
-     LOG "MOD: All dependencies are met"
+     if DEBUG
+      LOG "MOD: All dependencies are met"
      for cb in ON_LOADED
       cb()
 
@@ -135,6 +139,9 @@ If **browser**
      if nUncalled is nCall
       LOADING_COMPLETED = true
 
+    Mod.debug = (d = true) ->
+     DEBUG = d
+
     Mod.initialize = ->
      INITIALIZED = true
 
@@ -142,7 +149,8 @@ If **browser**
       _run()
      catch e
       if e instanceof ModError
-       LOG "MOD: Error - #{e.message}"
+       if DEBUG
+        LOG "MOD: Error - #{e.message}"
       else
        throw e
 
