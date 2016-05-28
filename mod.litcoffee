@@ -41,11 +41,12 @@ If **browser**
 
      return if not INITIALIZED
 
+     if DEBUG
+      LOG "MOD: Set - #{name}"
+
      try
       _run()
      catch e
-      if DEBUG
-       LOG "MOD: Set - #{name}"
       if e instanceof ModError
        if DEBUG
         LOG "MOD: Error - #{e.message}"
@@ -125,16 +126,21 @@ If **browser**
 
      if nUncalled isnt 0 and nCall is 0
       todo = {}
-      s = "Cyclic dependancy: "
       for cb in CALLBACKS when cb.called is false
        for name in cb.list when not MODULES[name]?
         todo[name] = true
 
-      first = ""
-      for name of todo
-       s += "#{first}#{name}"
-       first = ", "
-      throw new ModError s
+      err = "Dependencies: #{(n for n of todo).join ', '}"
+      throw new ModError err
+     else if DEBUG and nUncalled > nCall
+      todo = {}
+      for cb in CALLBACKS when cb.called is false
+       for name in cb.list when not MODULES[name]?
+        todo[name] = true
+
+      err = "Dependencies: #{(n for n of todo).join ', '}"
+      LOG err
+
 
      if nUncalled is nCall
       LOADING_COMPLETED = true
