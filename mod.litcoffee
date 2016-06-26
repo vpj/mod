@@ -9,9 +9,9 @@
 
 If **node.js**
 
-    if GLOBAL?
-     GLOBAL.Mod = Mod
-     SELF = GLOBAL
+    if global?
+     global.Mod = Mod
+     SELF = global
 
 If **browser**
 
