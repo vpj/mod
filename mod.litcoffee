@@ -44,15 +44,7 @@ If **browser**
      if DEBUG
       LOG "MOD: Set - #{name}"
 
-     try
-      _run()
-     catch e
-      if e instanceof ModError
-       if DEBUG
-        LOG "MOD: Error - #{e.message}"
-      else
-       throw e
-
+     _run()
      _onLoaded()
 
 ##Register callbacks to run after everything loads
@@ -85,6 +77,10 @@ If **browser**
       list: list
       called: false
 
+     return if not INITIALIZED
+     _run()
+     _onLoaded()
+
 ##Initialize modules
 
     _onLoaded = ->
@@ -105,54 +101,46 @@ If **browser**
      , 0
 
     _run = ->
-     LOADING_COMPLETED = false
-
-     nUncalled = 0
-     nCall = 0
-     for cb in CALLBACKS when cb.called is false
-      nUncalled++
-      list = []
-      satis = true
-      for name in cb.list
-       if MODULES[name]?
-        list.push MODULES[name]
-       else
-        satis = false
-        break
-
-      if satis is true
-       _loadCallback cb, list
-       nCall++
-
-     if nUncalled isnt 0 and nCall is 0
-      todo = {}
-      for cb in CALLBACKS when cb.called is false
-       for name in cb.list when not MODULES[name]?
-        todo[name] = true
-
-      err = "Dependencies: #{(n for n of todo).join ', '}"
-      throw new ModError err
-     else if DEBUG and nUncalled > nCall
-      todo = {}
-      for cb in CALLBACKS when cb.called is false
-       for name in cb.list when not MODULES[name]?
-        todo[name] = true
-
-      err = "Dependencies: #{(n for n of todo).join ', '}"
-      LOG err
-
-
-     if nUncalled is nCall
-      LOADING_COMPLETED = true
-
-    Mod.debug = (d = true) ->
-     DEBUG = d
-
-    Mod.initialize = ->
-     INITIALIZED = true
-
      try
-      _run()
+      LOADING_COMPLETED = false
+
+      nUncalled = 0
+      nCall = 0
+      for cb in CALLBACKS when cb.called is false
+       nUncalled++
+       list = []
+       satis = true
+       for name in cb.list
+        if MODULES[name]?
+         list.push MODULES[name]
+        else
+         satis = false
+         break
+
+       if satis is true
+        _loadCallback cb, list
+        nCall++
+
+      if nUncalled isnt 0 and nCall is 0
+       todo = {}
+       for cb in CALLBACKS when cb.called is false
+        for name in cb.list when not MODULES[name]?
+         todo[name] = true
+
+       err = "Dependencies: #{(n for n of todo).join ', '}"
+       throw new ModError err
+      else if DEBUG and nUncalled > nCall
+       todo = {}
+       for cb in CALLBACKS when cb.called is false
+        for name in cb.list when not MODULES[name]?
+         todo[name] = true
+
+       err = "Dependencies: #{(n for n of todo).join ', '}"
+       LOG err
+
+
+      if nUncalled is nCall
+       LOADING_COMPLETED = true
      catch e
       if e instanceof ModError
        if DEBUG
@@ -160,5 +148,12 @@ If **browser**
       else
        throw e
 
+    Mod.debug = (d = true) ->
+     DEBUG = d
+
+    Mod.initialize = ->
+     INITIALIZED = true
+
+     _run()
      _onLoaded()
 
