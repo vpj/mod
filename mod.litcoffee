@@ -78,6 +78,7 @@ If **browser**
       called: false
 
      return if not INITIALIZED
+     #console.error "RUN ON REQUIRE", list
      _run()
      _onLoaded()
 
