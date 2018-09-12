@@ -47,12 +47,12 @@ If **browser**
      _run()
      _onLoaded()
 
-##Register callbacks to run after everything loads
+## Register callbacks to run after everything loads
 
     Mod.onLoad = (callback) ->
      ON_LOADED.push callback
 
-##Require modules
+## Require modules
 
     Mod.require = ->
      if arguments.length < 1
@@ -82,7 +82,7 @@ If **browser**
      _run()
      _onLoaded()
 
-##Initialize modules
+## Initialize modules
 
     _onLoaded = ->
      return unless LOADING_COMPLETED and LOADING is 0
